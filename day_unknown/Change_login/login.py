@@ -4,14 +4,18 @@ gi.require_version('Gtk','3.0')
 from gi.repository import Gtk,GdkPixbuf,Gdk,Pango
 def root_check():
     root = subprocess.getoutput("id -u")
-    print(root)
     if root!=str(0):
         print("This script needs root permission \n Try again with sudo \n Exiting.....")
         sys.exit(0)
 root_check()
 curr_dir = os.path.dirname(__file__)
-gres_file = subprocess.getoutput("update-alternatives --display gdm3-theme.gresource | grep current")
-gres_file = gres_file[gres_file.index("/")::]
+gres_file = "/usr/share/gnome-shell/gnome-shell-theme.gresource"
+css = "gnome-shell.css"
+version = subprocess.getoutput("lsb_release -c | cut -f 2")
+if version.__contains__("focal"):
+    gres_file = subprocess.getoutput("update-alternatives --display gdm3-theme.gresource | grep current")
+    gres_file = gres_file[gres_file.index("/")::]
+    css = "gdm3.css"
 dest_dir = os.path.join(curr_dir+"/theme")
 os.chdir(curr_dir)
 print(os.getcwd())
@@ -33,7 +37,7 @@ class Handler:
     def restart(self,response_id):
         if response_id==Gtk.ResponseType.OK:
             print(os.getcwd())
-            shell("sudo %s %s %s"%(curr_dir+"/script/login",filechooser.get_filename(),gres_file))
+            shell("sudo %s %s %s %s"%(curr_dir+"/script/login",filechooser.get_filename(),gres_file,css))
             self.destroy()
         else:
             Gtk.main_quit()
